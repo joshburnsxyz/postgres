@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+
 	_ "github.com/lib/pq"
 )
 
@@ -59,7 +60,8 @@ func (p *PostgresDB) DropTable(tableName string) error {
 
 // InsertRow inserts a new row into the table.
 func (p *PostgresDB) InsertRow(tableName string, values ...interface{}) error {
-	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", tableName, createPlaceholders(len(values)))
+	placeholderStr := createPlaceholders(len(values))
+	query := fmt.Sprintf("INSERT INTO %s VALUES %s", tableName, placeholderStr)
 	_, err := p.db.Exec(query, values...)
 	return err
 }
@@ -79,7 +81,7 @@ func (p *PostgresDB) DeleteRows(tableName, condition string, args ...interface{}
 // createPlaceholders returns a comma-separated string of placeholders for the given count.
 func createPlaceholders(count int) string {
 	placeholders := make([]string, count)
-	for i := 0; i < count; i++ {
+	for i := range placeholders {
 		placeholders[i] = fmt.Sprintf("$%d", i+1)
 	}
 	return strings.Join(placeholders, ", ")
